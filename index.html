@@ -71,6 +71,8 @@ em {
 </head>
 <body>
 <div id="container">
+    <a href="extract.html">Extract from a zip file instead</a>
+
     <h1>GPT-2 Output Detector Demo</h1>
     <p>
         This is an online demo of the
@@ -122,6 +124,59 @@ function update_graph(result) {
     }
 }
 
+// Process the raw text by breaking it down and sending requests
+function processText(text) {
+    let words = text.split(" "); 
+    let groups = [];
+    let word_count = 0; 
+    let current_group = []
+    let results = []
+
+    for (let i = 0; i < words.length; i++) {
+        let currentWord = words[i]; 
+        current_group.push(currentWord); 
+        word_count++;
+        if ((word_count >= 300 && currentWord[currentWord.length - 1] == '.') || word_count == 400) {
+
+            groups.push(current_group); 
+            current_group = [];
+            word_count = 0; 
+        }
+    }
+    groups.push(current_group);
+    let group_count = groups.length;
+
+    for (let i = 0; i < group_count; i++) {
+        let req = new XMLHttpRequest();
+        var text =  groups[i].join(" ");
+        req.open('GET', 'https://openai-openai-detector.hf.space/' + '?' + text, true);
+
+
+        req.onreadystatechange = () => {
+            if (req.readyState !== 4) return;
+            if (req.status !== 200) throw new Error("HTTP status: " + req.status);
+            results.push(JSON.parse(req.responseText));
+
+    
+
+            if (results.length == group_count) {
+                let total_tokens = textbox.value.split(" ").length; 
+                let weighted_total_prob = 0; 
+                let total_words = 0;
+                for (let j = 0; j < group_count; j++) {
+                    let group_words = groups[j].length;
+                    weighted_total_prob += group_words * results[j].real_probability;
+                    total_words += group_words;
+                }
+                let avg_real_prob = weighted_total_prob / total_words;
+                update_graph({real_probability: avg_real_prob, used_tokens: total_tokens, all_tokens: total_tokens});
+            }
+        };
+        req.send();
+    }
+}
+
+
 textbox.oninput = () => {
     if (last_submit) {
         clearTimeout(last_submit);
@@ -132,21 +187,13 @@ textbox.oninput = () => {
     }
     message.innerText = 'Predicting ...';
     last_submit = setTimeout(() => {
-        let req = new XMLHttpRequest();
         if (textbox.value.length === 0) {
             update_graph(null);
             return;
         }
-        req.open('GET', 'https://openai-openai-detector.hf.space/' + '?' + textbox.value, true);
-        req.onreadystatechange = () => {
-            if (req.readyState !== 4) return;
-            if (req.status !== 200) throw new Error("HTTP status: " + req.status);
-            let result = JSON.parse(req.responseText);
-            update_graph(result);
-        };
-        req.send();
+        processText(textbox.value)
+        
     }, 1000);
-
 };
 
 window.addEventListener('DOMContentLoaded', () => {
