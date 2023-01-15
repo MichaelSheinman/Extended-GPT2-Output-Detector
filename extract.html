@@ -4,6 +4,7 @@
 <head>
     <title>GPT-2 Output Detector - File Upload</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.2.2/jszip.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style type="text/css">
     * {
         box-sizing: border-box;
@@ -42,10 +43,10 @@ a:hover {
         <p>
             Upload a zip file containing text files to be processed by the GPT-2 output detector model.
         </p>
-        <input type="file" id="file-input" accept=".zip">
+        <input class="btn" type="file" id="file-input" accept=".zip">
         <div id="results-table">
-            <table>
-                <thead>
+            <table class="table">
+                <thead class="thead-dark">
                     <tr>
                         <th>File Name</th>
                         <th>Real probability</th>
@@ -151,3 +152,6 @@ a:hover {
     })
 
     </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/[email protected]/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
