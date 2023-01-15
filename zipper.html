@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>GPT-2 Output Detector - File Upload</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.2.2/jszip.min.js"></script>
+</head>
+
+<body>
+    <div id="container">
+        <h1>GPT-2 Output Detector - File Upload</h1>
+        <p>
+            Upload a zip file containing text files to be processed by the GPT-2 output detector model.
+        </p>
+        <input type="file" id="file-input" accept=".zip">
+        <div id="results-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>File Name</th>
+                        <th>Real probability</th>
+                        <th>Fake probability</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        // Process the raw text by breaking it down and sending requests
+    function processText(student, text) {
+        let words = text.split(" "); 
+        let groups = [];
+        let word_count = 0; 
+        let current_group = []
+        let results = []
+
+        for (let i = 0; i < words.length; i++) {
+            let currentWord = words[i]; 
+            current_group.push(currentWord); 
+            word_count++;
+            if ((word_count >= 300 && currentWord[currentWord.length - 1] == '.') || word_count == 400) {
+
+                groups.push(current_group); 
+                current_group = [];
+                word_count = 0; 
+            }
+        }
+        groups.push(current_group);
+        let group_count = groups.length;
+
+        for (let i = 0; i < group_count; i++) {
+            let req = new XMLHttpRequest();
+            var text =  groups[i].join(" ");
+            req.open('GET', 'https://openai-openai-detector.hf.space/' + '?' + text, true);
+
+
+            req.onreadystatechange = () => {
+                if (req.readyState !== 4) return;
+                if (req.status !== 200) throw new Error("HTTP status: " + req.status);
+                results.push(JSON.parse(req.responseText));
+
+        
+
+                if (results.length == group_count) {
+                    let total_tokens = text.split(" ").length; 
+                    let weighted_total_prob = 0; 
+                    let total_words = 0;
+                    for (let j = 0; j < group_count; j++) {
+                        let group_words = groups[j].length;
+                        weighted_total_prob += group_words * results[j].real_probability;
+                        total_words += group_words;
+                    }
+                    let avg_real_prob = weighted_total_prob / total_words;
+                    console.log(student, "got real probability of ", avg_real_prob)
+                    let row = document.createElement("tr");
+                    let file_name_cell = document.createElement("td");
+                    file_name_cell.innerHTML = student;
+                    row.appendChild(file_name_cell);
+                    let real_prob_cell = document.createElement("td");
+                    real_prob_cell.innerHTML = (avg_real_prob * 100).toFixed(2) + "%";
+                    row.appendChild(real_prob_cell);
+                    let fake_prob_cell = document.createElement("td");
+                    fake_prob_cell.innerHTML = (100 - (avg_real_prob * 100)).toFixed(2) + "%";
+                    row.appendChild(fake_prob_cell);
+                    document.getElementById("results-body").appendChild(row);
+                }
+            };
+            req.send();
+        }
+    }
+
+
+    document.getElementById('file-input').addEventListener('change', function() {
+        console.log("something was uploaded")
+        let file = this.files[0];
+        let filenames = [];
+        let zip = new JSZip(); 
+        zip.loadAsync(file).then(function(zip) {
+            let promises = [];
+            for (let fileName in zip.files) {
+                console.log("reading file = ", fileName)
+                let file = zip.files[fileName];
+                if (!file.dir) {
+                    filenames.push(fileName)
+                    promises.push(file.async("string"));
+                }
+            }
+            Promise.all(promises).then(function(files) {
+                let results = [];
+                // Outer loop: Go over all files 
+                for (let i = 0; i < files.length; i++) {
+                    let text = files[i];
+                    console.log("File text = ", text)
+                    processText(filenames[i], text)
+
+                }
+            })    
+        })
+    })
+
+    </script>
