@@ -4,13 +4,14 @@ The project is currently running at: https://michaelgithubhype.github.io/Extende
 
 Related blog: https://michaelsheinman.medium.com/how-i-improved-the-gpt2-output-detector-6e47ba133235
 
-![project example](https://cdn-images-1.medium.com/max/880/1*KefEmIQ2rIVXUjd-ZxKkeQ.gif)
+![project example](https://miro.medium.com/max/640/1*oQigM3yqYRowYANCkb1UNA.gif)
 
 
 ## Background 
-This project extends the [GPT-2 Output Detector](https://github.com/openai/gpt-2-output-dataset/tree/master/detector) made by OpenAI. I added two features on top of the original detector:
+This project extends the [GPT-2 Output Detector](https://github.com/openai/gpt-2-output-dataset/tree/master/detector) made by OpenAI. I added three features on top of the original detector:
 
 * No token limit. This version splits tokens into batches and then computes the average accuracy across the batches. 
+* Custom file upload. Allows the ability to upload files. Currently supports text and pdf files. 
 * Zip file support. The app can run through multiple submissions and compute a real probability for each one. 
 
 
