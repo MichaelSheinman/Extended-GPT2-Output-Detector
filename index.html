@@ -68,6 +68,10 @@ em {
     font-style: normal;
 }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.2/build/pdf.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.2/build/pdf.worker.js"></script>
+
 </head>
 <body>
 <div id="container">
@@ -82,6 +86,8 @@ em {
         <u>The results start to get reliable after around 50 tokens.</u>
     </p>
     <textarea id="textbox" placeholder="Enter text here"></textarea>
+    <input type="file" id="fileInput" onchange="parseFile()" />
+
     <div><table cellspacing="0" cellpadding="0">
         <tr class="bar-row" style="vertical-align: bottom;">
             <td style="text-align: left;">Real</td>
@@ -96,6 +102,8 @@ em {
     </table></div>
 </div>
 <script>
+// import pdfjsLib from 'pdfjs-dist/es5/build/pdf';
+
 let textbox = document.getElementById('textbox');
 let last_submit = null;
 
@@ -156,8 +164,6 @@ function processText(text) {
             if (req.status !== 200) throw new Error("HTTP status: " + req.status);
             results.push(JSON.parse(req.responseText));
 
-    
-
             if (results.length == number_of_batches) {
                 let total_tokens = textbox.value.split(" ").length; 
                 let weighted_total_prob = 0; 
@@ -198,6 +204,43 @@ textbox.oninput = () => {
 window.addEventListener('DOMContentLoaded', () => {
     textbox.focus();
 });
+
+function parseFile() {
+  // Get the selected file
+  var file = document.getElementById("fileInput").files[0];
+  var fileReader = new FileReader();
+  
+  if (file.type === 'application/pdf') {
+    // Parse the PDF file
+    fileReader.onload = function() {
+      var pdfData = new Uint8Array(this.result);
+
+      pdfjsLib.getDocument(pdfData).promise.then(function(pdf) {
+        pdf.getPage(1).then(function(page) {
+            page.getTextContent().then(function(textContent) {
+                var text = textContent.items.map(i => i.str).join('')
+                // Do something with the text, such as display it on the page
+                document.getElementById("textbox").innerHTML = text;
+            });
+        });
+      });
+    };
+    fileReader.readAsArrayBuffer(file);
+  } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    fileReader.onload = function() {
+      var docx = new DocxJs();
+      docx.load(fileReader.result).then(function(text){
+        // Do something with the text, such as display it on the page
+        document.getElementById("textbox").innerHTML = text;
+      });
+    }
+    fileReader.readAsArrayBuffer(file);
+  } else {
+    // Handle other file types
+    console.log('Unsupported file type');
+  }
+}
+
 </script>
 </body>
 </html>
