@@ -210,7 +210,6 @@ function parseFile() {
   // Get the selected file
   var file = document.getElementById("fileInput").files[0];
   var fileReader = new FileReader();
-  
   if (file.type === 'application/pdf') {
     // Parse the PDF file
     fileReader.onload = function() {
@@ -229,9 +228,19 @@ function parseFile() {
       });
     };
     fileReader.readAsArrayBuffer(file);
-  } else {
+  } else if (file.type.startsWith('text')) {
+    console.log(file);
+    fileReader.onload = function() {
+        var text = fileReader.result;
+        console.log("got text", text)
+        document.getElementById("textbox").innerHTML = text;
+        processText(text); 
+    };
+    fileReader.readAsText(file);
+  }
+  else {
     // Handle other file types
-    console.log('Unsupported file type');
+    alert('Unsupported file type');
   }
 }
 
