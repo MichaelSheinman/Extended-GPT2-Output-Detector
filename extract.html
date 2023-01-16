@@ -32,7 +32,8 @@ a:hover {
 }
 
     </style> 
-
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.2/build/pdf.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.2/build/pdf.worker.js"></script>
 </head>
 
 <body>
@@ -93,7 +94,6 @@ a:hover {
                 results.push(JSON.parse(req.responseText));
 
         
-
                 if (results.length == group_count) {
                     let total_tokens = text.split(" ").length; 
                     let weighted_total_prob = 0; 
@@ -124,28 +124,44 @@ a:hover {
 
 
     document.getElementById('file-input').addEventListener('change', function() {
-        console.log("something was uploaded")
         let file = this.files[0];
         let filenames = [];
         let zip = new JSZip(); 
         zip.loadAsync(file).then(function(zip) {
             let promises = [];
             for (let fileName in zip.files) {
-                console.log("reading file = ", fileName)
                 let file = zip.files[fileName];
                 if (!file.dir) {
                     filenames.push(fileName)
-                    promises.push(file.async("string"));
+                    if (fileName.split('.').pop() === 'pdf') { 
+                        promises.push(file.async("uint8array").then(function(uint8array) {
+                            return pdfjsLib.getDocument({data: uint8array}).promise; 
+                        }))
+                    } else {
+                        promises.push(file.async("string"));
+                    }
+                    
                 }
             }
             Promise.all(promises).then(function(files) {
                 let results = [];
                 // Outer loop: Go over all files 
+                console.log("files is ", files)
                 for (let i = 0; i < files.length; i++) {
-                    let text = files[i];
-                    console.log("File text = ", text)
-                    processText(filenames[i], text)
-
+                    let file = files[i];
+                    console.log("file is ", file)
+                    if (filenames[i].split('.').pop() === 'pdf') {
+                        let pdf = file;
+                        files[i].getPage(1).then(function(page) {
+                            var textContent = page.getTextContent();
+                            textContent.then(function (text) {
+                                var text = text.items.filter(i => i.str !== '●').map(i => i.str).join('')
+                                processText(filenames[i], text)
+                            });
+                        });
+                    } else {
+                        processText(filenames[i], file)
+                    }
                 }
             })    
         })
