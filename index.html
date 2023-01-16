@@ -103,7 +103,6 @@ em {
     </table></div>
 </div>
 <script>
-// import pdfjsLib from 'pdfjs-dist/es5/build/pdf';
 
 let textbox = document.getElementById('textbox');
 let last_submit = null;
@@ -218,9 +217,7 @@ function parseFile() {
       pdfjsLib.getDocument(pdfData).promise.then(function(pdf) {
         pdf.getPage(1).then(function(page) {
             page.getTextContent().then(function(textContent) {
-                console.log("text contents are ", textContent.items)
                 var text = textContent.items.filter(i => i.str !== '●').map(i => i.str).join('')
-                // Do something with the text, such as display it on the page
                 document.getElementById("textbox").innerHTML = text;
                 processText(text); 
             });
