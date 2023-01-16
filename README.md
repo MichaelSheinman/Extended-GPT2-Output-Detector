@@ -1,7 +1,10 @@
 # Extended GPT2 Output Detector
 
 The project is currently running at: https://michaelgithubhype.github.io/Extended-GPT2-Output-Detector/
-Related blog: TODO 
+Related blog: TODO
+
+![project example](https://cdn-images-1.medium.com/max/880/1*KefEmIQ2rIVXUjd-ZxKkeQ.gif)
+
 
 ## Background 
 This project extends the [GPT-2 Output Detector](https://github.com/openai/gpt-2-output-dataset/tree/master/detector) made by OpenAI. I added two features on top of the original detector:
