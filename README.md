@@ -1,6 +1,7 @@
 # Extended GPT2 Output Detector
 
 The project is currently running at: https://michaelgithubhype.github.io/Extended-GPT2-Output-Detector/
+
 Related blog: https://michaelsheinman.medium.com/how-i-improved-the-gpt2-output-detector-6e47ba133235
 
 ![project example](https://cdn-images-1.medium.com/max/880/1*KefEmIQ2rIVXUjd-ZxKkeQ.gif)
