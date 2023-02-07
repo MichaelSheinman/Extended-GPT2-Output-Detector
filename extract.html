@@ -107,12 +107,15 @@ a:hover {
                     console.log(student, "got real probability of ", avg_real_prob)
                     let row = document.createElement("tr");
                     let file_name_cell = document.createElement("td");
+                    file_name_cell.className = "file-name";
                     file_name_cell.innerHTML = student;
                     row.appendChild(file_name_cell);
                     let real_prob_cell = document.createElement("td");
+                    real_prob_cell.className = "real-probability"
                     real_prob_cell.innerHTML = (avg_real_prob * 100).toFixed(2) + "%";
                     row.appendChild(real_prob_cell);
                     let fake_prob_cell = document.createElement("td");
+                    fake_prob_cell.className = "fake-probability"
                     fake_prob_cell.innerHTML = (100 - (avg_real_prob * 100)).toFixed(2) + "%";
                     row.appendChild(fake_prob_cell);
                     document.getElementById("results-body").appendChild(row);
